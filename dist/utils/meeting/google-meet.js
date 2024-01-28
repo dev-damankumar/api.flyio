@@ -13,6 +13,7 @@ exports.addGoogleMeeting = exports.getGoogleMeetings = void 0;
 const googleapis_1 = require("googleapis");
 const uuid_1 = require("uuid");
 const constants_1 = require("../../constants");
+console.log("CREDENTIALS_PATH", constants_1.CREDENTIALS_PATH);
 const auth = new googleapis_1.google.auth.JWT(constants_1.googleMeetClientEmail, constants_1.CREDENTIALS_PATH, constants_1.googleMeetPrivateKey, constants_1.SCOPES, constants_1.impersonatedUser);
 const calendar = googleapis_1.google.calendar({
     version: "v3",

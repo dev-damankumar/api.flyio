@@ -9,7 +9,7 @@ import {
   impersonatedUser,
 } from "../../constants";
 import { AddMeetingInput } from "../../generated/graphql";
-
+console.log("CREDENTIALS_PATH", CREDENTIALS_PATH);
 const auth = new google.auth.JWT(
   googleMeetClientEmail,
   CREDENTIALS_PATH,

@@ -3,12 +3,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CREDENTIALS_PATH = exports.email = exports.googleMeetPrivateKey = exports.impersonatedUser = exports.SCOPES = exports.googleMeetCalenderId = exports.googleMeetProjectNumber = exports.googleMeetClientEmail = exports.siteurl = exports.jwtSecret = exports.port = exports.db = exports._dev_ = exports.mockSMTP = exports._prod_ = void 0;
+exports.CREDENTIALS_PATH = exports.email = exports.googleMeetPrivateKey = exports.impersonatedUser = exports.SCOPES = exports.googleMeetCalenderId = exports.googleMeetProjectNumber = exports.googleMeetClientEmail = exports.siteurl = exports.jwtSecret = exports.port = exports.secretPath = exports.db = exports._dev_ = exports.mockSMTP = exports._prod_ = void 0;
 const path_1 = __importDefault(require("path"));
 exports._prod_ = process.env.NODE_ENV === "production";
 exports.mockSMTP = process.env.MOCK_SMTP === "true";
 exports._dev_ = process.env.NODE_ENV === "development";
 exports.db = process.env.DB;
+exports.secretPath = process.env.SECRET_PATH;
 exports.port = process.env.PORT;
 exports.jwtSecret = process.env.JWT_SECRET;
 exports.siteurl = process.env.WEB_URL;
@@ -23,4 +24,6 @@ exports.googleMeetPrivateKey = process.env
 exports.email = {
     from: process.env.FROM_EMAIL,
 };
-exports.CREDENTIALS_PATH = path_1.default.join(process.cwd(), "google-meet-credentials.json");
+const devFilePath = path_1.default.join(process.cwd(), "google-meet-credentials.json");
+const prodFilePath = path_1.default.resolve("/", exports.secretPath, "google-meet-credentials.json");
+exports.CREDENTIALS_PATH = exports._prod_ ? prodFilePath : devFilePath;
