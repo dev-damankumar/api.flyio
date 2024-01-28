@@ -5,15 +5,16 @@ import {
   SCOPES,
   googleMeetCalenderId,
   googleMeetClientEmail,
-  googleMeetPrivateKey,
   impersonatedUser,
 } from "../../constants";
 import { AddMeetingInput } from "../../generated/graphql";
-console.log("CREDENTIALS_PATH", CREDENTIALS_PATH);
+const gMeetFile = require(CREDENTIALS_PATH);
+console.log("gMeetFile", gMeetFile);
+
 const auth = new google.auth.JWT(
   googleMeetClientEmail,
   CREDENTIALS_PATH,
-  googleMeetPrivateKey,
+  gMeetFile.private_key,
   SCOPES,
   impersonatedUser
 );
