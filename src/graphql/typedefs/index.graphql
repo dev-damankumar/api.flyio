@@ -1,0 +1,16 @@
+type Query {
+  users: [PublicUser]!
+  user(id: ID!): PublicUser
+  login(email: String!, password: String!): LoggedInUser
+  getStats: Stats!
+  getMeetings(filter: IMeetingFilter): [Meeting]!
+}
+
+type Mutation {
+  createUser(user: UserCreateInput!): PublicUser!
+  updateUser(user: UserUpdateInput!): PublicUser!
+  forgotPassword(email: String!): ForgotPasswordResponse!
+  resetPassword(token: String!, password: String!): ForgotPasswordResponse!
+  setStats: Stats!
+  addMeeting(meeting: AddMeetingInput!): Meeting!
+}

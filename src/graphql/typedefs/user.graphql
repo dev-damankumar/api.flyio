@@ -1,0 +1,96 @@
+# Types
+type User implements Timestamps {
+  _id: ID!
+  id: ID!
+  firstname: String!
+  lastname: String!
+  username: String!
+  password: String
+  email: String!
+  address: Address
+  mobile: String!
+  isVerified: Boolean!
+  authType: AuthType
+  # Interface required
+  createdAt: Date!
+  updatedAt: Date!
+}
+
+type PublicUser implements Timestamps {
+  _id: ID!
+  firstname: String!
+  lastname: String!
+  username: String!
+  email: String!
+  address: Address
+  mobile: String!
+  isVerified: Boolean!
+  authType: AuthType
+  # Interface required
+  createdAt: Date!
+  updatedAt: Date!
+}
+
+type LoggedInUser implements Timestamps {
+  _id: ID!
+  firstname: String!
+  lastname: String!
+  username: String!
+  email: String!
+  token: String!
+  address: Address
+  mobile: String!
+  isVerified: Boolean!
+  authType: AuthType
+  # Interface required
+  createdAt: Date!
+  updatedAt: Date!
+}
+
+type Address {
+  city: String
+  country: String
+  state: String
+  pincode: Int
+}
+
+enum AuthType {
+  Credentails
+  MagicLink
+  Social
+}
+
+enum ResponseType {
+  error
+  success
+}
+# Inputs
+input AddressInput {
+  city: String
+  country: String
+  state: String
+  pincode: Int
+}
+
+input UserCreateInput {
+  firstname: String!
+  lastname: String!
+  password: String!
+  username: String!
+  email: String!
+  mobile: String!
+  address: AddressInput
+}
+
+input UserUpdateInput {
+  firstname: String
+  lastname: String
+  address: AddressInput
+  mobile: String
+}
+
+type ForgotPasswordResponse {
+  message: String
+  status: Int
+  type: ResponseType
+}

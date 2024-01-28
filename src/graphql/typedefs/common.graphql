@@ -1,0 +1,8 @@
+# Interface
+interface Timestamps {
+  createdAt: Date!
+  updatedAt: Date!
+}
+
+# Custom Scalars
+scalar Date

@@ -1,0 +1,47 @@
+type Meeting implements Timestamps {
+  id: ID!
+  name: String!
+  description: String
+  endDate: Date!
+  type: String!
+  startDate: Date!
+  users: [TAddUser]!
+  host: String!
+  createdAt: Date!
+  updatedAt: Date!
+}
+
+type TAddUser {
+  email: String!
+  id: ID
+}
+
+input IMeetingFilter {
+  today: Boolean
+  tommorrow: Boolean
+}
+
+input InputAddUser {
+  email: String!
+  id: ID
+}
+
+type MeetingWithHost {
+  name: String!
+  description: String
+  startDate: Date!
+  type: String!
+  endDate: Date!
+  users: [TAddUser]!
+  host: String!
+}
+
+input AddMeetingInput {
+  name: String!
+  description: String
+  location: String
+  type: String!
+  startDate: Date!
+  endDate: Date!
+  users: [InputAddUser]!
+}
