@@ -26,6 +26,7 @@
     "@types/mongoose": "^5.11.97",
     "@types/node": "^20.10.6",
     "@types/nodemailer": "^6.4.14",
+    "@types/shortid": "^0.0.32",
     "@types/uuid": "^9.0.7",
     "typescript": "^5.3.3"
   },
@@ -45,6 +46,7 @@
     "mongoose": "^8.0.3",
     "nodemailer": "^6.9.8",
     "redis": "^4.6.12",
+    "shortid": "^2.2.16",
     "uuid": "^9.0.1"
   }
 }

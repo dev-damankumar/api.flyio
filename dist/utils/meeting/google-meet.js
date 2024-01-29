@@ -8,11 +8,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.addGoogleMeeting = exports.getGoogleMeetings = void 0;
 const googleapis_1 = require("googleapis");
 const uuid_1 = require("uuid");
 const constants_1 = require("../../constants");
+const meeting_1 = __importDefault(require("../../models/meeting"));
 const gMeetFile = require(constants_1.CREDENTIALS_PATH);
 console.log("gMeetFile", gMeetFile);
 const auth = new googleapis_1.google.auth.JWT(constants_1.googleMeetClientEmail, constants_1.CREDENTIALS_PATH, gMeetFile.private_key, constants_1.SCOPES, constants_1.impersonatedUser);
@@ -34,7 +38,7 @@ function getGoogleMeetings() {
     });
 }
 exports.getGoogleMeetings = getGoogleMeetings;
-function addGoogleMeeting(details) {
+function addGoogleMeeting(_, details) {
     return __awaiter(this, void 0, void 0, function* () {
         const attendees = details.users.map((user) => ({ email: user === null || user === void 0 ? void 0 : user.email }));
         const event = {
@@ -65,12 +69,13 @@ function addGoogleMeeting(details) {
             },
         };
         try {
-            const response = yield calendar.events.insert({
+            yield calendar.events.insert({
                 calendarId: constants_1.googleMeetCalenderId,
                 requestBody: event,
                 conferenceDataVersion: 1,
             });
-            return response.data;
+            const meeting = yield meeting_1.default.create(Object.assign({}, details));
+            return meeting;
         }
         catch (error) {
             console.log("There was an error contacting the Calendar service: " + error);

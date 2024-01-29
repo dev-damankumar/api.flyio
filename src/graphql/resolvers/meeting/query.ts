@@ -10,6 +10,13 @@ const meetingQueries = {
   ) {
     return await meeting.getMeetingsHandler(context, args.filter);
   },
+  async checkInvitedUser(
+    _: any,
+    args: { meetingId: string },
+    context: GraphqlContextFunctionArgument
+  ) {
+    return await meeting.checkIfUserisInvited(context, args);
+  },
 };
 
 export default meetingQueries;

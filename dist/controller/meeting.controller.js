@@ -27,7 +27,6 @@ const getMeetingsHandler = (context, data) => __awaiter(void 0, void 0, void 0, 
         const { tommorrowEndDate, tommorrowStartDate } = (0, date_1.getTommorrowDateRange)();
         match.startDate = { $gte: tommorrowStartDate, $lt: tommorrowEndDate };
     }
-    console.log("match", match);
     const meetings = yield meeting_1.default.find(match).sort("startDate").exec();
     return meetings;
 });
@@ -35,11 +34,21 @@ const addMeetingHandler = (context, data) => __awaiter(void 0, void 0, void 0, f
     if (!context.auth)
         throw new Error("Unauthorized access");
     const host = context.auth._id;
-    const event = yield (0, index_1.addMeeting)(data.type, data);
-    const meeting = yield meeting_1.default.create(Object.assign(Object.assign({}, data), { host }));
-    return meeting;
+    return yield (0, index_1.addMeeting)(context, data.type, Object.assign(Object.assign({}, data), { host }));
+});
+const checkIfUserisInvited = (context, data) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!context.auth)
+        throw new Error("Unauthorized access");
+    const userId = context.auth._id;
+    const meetingId = data.meetingId;
+    const user = yield meeting_1.default.findOne({
+        meetingId,
+        $or: [{ host: userId }, { "users._id": userId }],
+    });
+    return { verified: !!user };
 });
 exports.default = {
     getMeetingsHandler,
     addMeetingHandler,
+    checkIfUserisInvited,
 };

@@ -2,6 +2,8 @@ type Meeting implements Timestamps {
   id: ID!
   name: String!
   description: String
+  meetingId: String
+  url: String
   endDate: Date!
   type: String!
   startDate: Date!
@@ -16,6 +18,10 @@ type TAddUser {
   id: ID
 }
 
+type UserInvite {
+  verified: Boolean!
+}
+
 input IMeetingFilter {
   today: Boolean
   tommorrow: Boolean
@@ -24,16 +30,6 @@ input IMeetingFilter {
 input InputAddUser {
   email: String!
   id: ID
-}
-
-type MeetingWithHost {
-  name: String!
-  description: String
-  startDate: Date!
-  type: String!
-  endDate: Date!
-  users: [TAddUser]!
-  host: String!
 }
 
 input AddMeetingInput {

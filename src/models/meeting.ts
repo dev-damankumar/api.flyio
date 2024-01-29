@@ -10,6 +10,8 @@ const meetingSchema = new Schema(
       type: String,
       required: true,
     },
+    url: String,
+    meetingId: String,
     description: {
       type: String,
     },

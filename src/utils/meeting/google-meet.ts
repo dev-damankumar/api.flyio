@@ -8,6 +8,9 @@ import {
   impersonatedUser,
 } from "../../constants";
 import { AddMeetingInput } from "../../generated/graphql";
+import Meeting from "../../models/meeting";
+import { MeetingType } from "../../types";
+import { ObjectId } from "mongoose";
 const gMeetFile = require(CREDENTIALS_PATH);
 console.log("gMeetFile", gMeetFile);
 
@@ -36,7 +39,10 @@ export async function getGoogleMeetings() {
   return meetings;
 }
 
-export async function addGoogleMeeting(details: AddMeetingInput) {
+export async function addGoogleMeeting(
+  _: any,
+  details: AddMeetingInput & { type: MeetingType; host: string | ObjectId }
+) {
   const attendees = details.users.map((user) => ({ email: user?.email }));
   const event = {
     summary: details.name,
@@ -66,12 +72,13 @@ export async function addGoogleMeeting(details: AddMeetingInput) {
     },
   };
   try {
-    const response = await calendar.events.insert({
+    await calendar.events.insert({
       calendarId: googleMeetCalenderId,
       requestBody: event,
       conferenceDataVersion: 1,
     });
-    return response.data;
+    const meeting = await Meeting.create({ ...details });
+    return meeting;
   } catch (error) {
     console.log("There was an error contacting the Calendar service: " + error);
     throw new Error("There was an error while creating event");

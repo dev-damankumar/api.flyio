@@ -33,6 +33,8 @@ const meetingSchema = new mongoose_1.Schema({
         type: String,
         required: true,
     },
+    url: String,
+    meetingId: String,
     description: {
         type: String,
     },

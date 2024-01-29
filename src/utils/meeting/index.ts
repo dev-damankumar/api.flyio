@@ -1,6 +1,8 @@
+import { ObjectId } from "mongoose";
 import { AddMeetingInput } from "../../generated/graphql";
-import { MeetingType } from "../../types";
+import { GraphqlContextFunctionArgument, MeetingType } from "../../types";
 import { addGoogleMeeting, getGoogleMeetings } from "./google-meet";
+import { addFlyIOMeeting } from "./fly-io";
 
 const meetingTypes = {
   "google-meet": {
@@ -16,12 +18,16 @@ const meetingTypes = {
     get: getGoogleMeetings,
   },
   "fly-io": {
-    add: addGoogleMeeting,
+    add: addFlyIOMeeting,
     get: getGoogleMeetings,
   },
 };
-export async function addMeeting(type: MeetingType, details: AddMeetingInput) {
+export async function addMeeting(
+  context: GraphqlContextFunctionArgument,
+  type: MeetingType,
+  details: AddMeetingInput & { type: MeetingType; host: string | ObjectId }
+) {
   const Meet = meetingTypes[type];
-  const data = await Meet.add(details);
+  const data = await Meet.add(context, details);
   return data;
 }

@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.addMeeting = void 0;
 const google_meet_1 = require("./google-meet");
+const fly_io_1 = require("./fly-io");
 const meetingTypes = {
     "google-meet": {
         add: google_meet_1.addGoogleMeeting,
@@ -25,14 +26,14 @@ const meetingTypes = {
         get: google_meet_1.getGoogleMeetings,
     },
     "fly-io": {
-        add: google_meet_1.addGoogleMeeting,
+        add: fly_io_1.addFlyIOMeeting,
         get: google_meet_1.getGoogleMeetings,
     },
 };
-function addMeeting(type, details) {
+function addMeeting(context, type, details) {
     return __awaiter(this, void 0, void 0, function* () {
         const Meet = meetingTypes[type];
-        const data = yield Meet.add(details);
+        const data = yield Meet.add(context, details);
         return data;
     });
 }

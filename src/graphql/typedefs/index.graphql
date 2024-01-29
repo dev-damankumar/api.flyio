@@ -4,6 +4,7 @@ type Query {
   login(email: String!, password: String!): LoggedInUser
   getStats: Stats!
   getMeetings(filter: IMeetingFilter): [Meeting]!
+  checkInvitedUser(meetingId: String): UserInvite!
 }
 
 type Mutation {

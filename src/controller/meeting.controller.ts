@@ -18,7 +18,6 @@ const getMeetingsHandler = async (
     const { tommorrowEndDate, tommorrowStartDate } = getTommorrowDateRange();
     match.startDate = { $gte: tommorrowStartDate, $lt: tommorrowEndDate };
   }
-  console.log("match", match);
   const meetings = await Meeting.find(match).sort("startDate").exec();
   return meetings;
 };
@@ -29,13 +28,25 @@ const addMeetingHandler = async (
 ) => {
   if (!context.auth) throw new Error("Unauthorized access");
   const host = context.auth._id;
-  const event = await addMeeting(data.type, data);
-  const meeting = await Meeting.create({ ...data, host });
-
-  return meeting;
+  return await addMeeting(context, data.type, { ...data, host });
 };
 
+const checkIfUserisInvited = async (
+  context: GraphqlContextFunctionArgument,
+  data: { meetingId: string }
+) => {
+  if (!context.auth) throw new Error("Unauthorized access");
+  const userId = context.auth._id;
+  const meetingId = data.meetingId;
+  const user = await Meeting.findOne({
+    meetingId,
+    $or: [{ host: userId }, { "users._id": userId }],
+  });
+
+  return { verified: !!user };
+};
 export default {
   getMeetingsHandler,
   addMeetingHandler,
+  checkIfUserisInvited,
 };
