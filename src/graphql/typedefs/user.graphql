@@ -94,3 +94,9 @@ type ForgotPasswordResponse {
   status: Int
   type: ResponseType
 }
+
+type Response {
+  message: String
+  status: Int
+  type: ResponseType
+}

@@ -1,7 +1,5 @@
-import { BaseContext, ContextFunction } from "@apollo/server";
 import user from "../../../controller/user.controller";
 import { UserCreateInput, UserUpdateInput } from "../../../generated/graphql";
-import { ExpressContextFunctionArgument } from "@apollo/server/dist/esm/express4";
 import { GraphqlContextFunctionArgument } from "../../../types";
 
 const userMutations = {
@@ -24,6 +22,17 @@ const userMutations = {
     context: GraphqlContextFunctionArgument
   ) => {
     return await user.resetPassword(context, args);
+  },
+  authorizeIntegrationCalender: async (
+    _: any,
+    args: {
+      type: "zoom" | "google-meet" | "microsoft-teams";
+      accessToken: string;
+      refreshToken: string;
+    },
+    context: GraphqlContextFunctionArgument
+  ) => {
+    return await user.authorizeIntegrationCalender(context, args);
   },
 };
 

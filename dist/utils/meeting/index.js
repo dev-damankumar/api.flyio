@@ -12,13 +12,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.addMeeting = void 0;
 const google_meet_1 = require("./google-meet");
 const fly_io_1 = require("./fly-io");
+const microsoft_teams_1 = require("./microsoft-teams");
 const meetingTypes = {
     "google-meet": {
         add: google_meet_1.addGoogleMeeting,
         get: google_meet_1.getGoogleMeetings,
     },
     "microsoft-teams": {
-        add: google_meet_1.addGoogleMeeting,
+        add: microsoft_teams_1.addTeamsMeeting,
         get: google_meet_1.getGoogleMeetings,
     },
     zoom: {

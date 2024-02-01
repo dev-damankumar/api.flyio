@@ -10,8 +10,13 @@ type Query {
 type Mutation {
   createUser(user: UserCreateInput!): PublicUser!
   updateUser(user: UserUpdateInput!): PublicUser!
-  forgotPassword(email: String!): ForgotPasswordResponse!
-  resetPassword(token: String!, password: String!): ForgotPasswordResponse!
+  forgotPassword(email: String!): Response!
+  resetPassword(token: String!, password: String!): Response!
+  authorizeIntegrationCalender(
+    accessToken: String!
+    refreshToken: String!
+    type: String!
+  ): Response!
   setStats: Stats!
   addMeeting(meeting: AddMeetingInput!): Meeting!
 }

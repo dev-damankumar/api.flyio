@@ -39,7 +39,20 @@ const userSchema = new Schema(
     password: {
       type: String,
     },
-
+    integration: {
+      google: {
+        accessToken: String,
+        refreshToken: String,
+      },
+      microsoft: {
+        accessToken: String,
+        refreshToken: String,
+      },
+      zoom: {
+        accessToken: String,
+        refreshToken: String,
+      },
+    },
     security: {
       resetPassword: {
         otp: Number,

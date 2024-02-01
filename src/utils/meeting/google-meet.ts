@@ -1,30 +1,23 @@
+import User from "../../models/user";
 import { google } from "googleapis";
 import { v4 as uuidv4 } from "uuid";
 import {
-  CREDENTIALS_PATH,
-  SCOPES,
+  GQLErrorCodes,
+  googleClientId,
   googleMeetCalenderId,
-  googleMeetClientEmail,
-  impersonatedUser,
+  googleSecretId,
 } from "../../constants";
 import { AddMeetingInput } from "../../generated/graphql";
 import Meeting from "../../models/meeting";
-import { MeetingType } from "../../types";
+import { GraphqlContextFunctionArgument, MeetingType } from "../../types";
 import { ObjectId } from "mongoose";
-const gMeetFile = require(CREDENTIALS_PATH);
-console.log("gMeetFile", gMeetFile);
+import { GQLError } from "../index";
 
-const auth = new google.auth.JWT(
-  googleMeetClientEmail,
-  CREDENTIALS_PATH,
-  gMeetFile.private_key,
-  SCOPES,
-  impersonatedUser
-);
+const oAuth2Client = new google.auth.OAuth2(googleClientId, googleSecretId);
 
 const calendar = google.calendar({
   version: "v3",
-  auth,
+  auth: oAuth2Client,
 });
 
 export async function getGoogleMeetings() {
@@ -40,9 +33,30 @@ export async function getGoogleMeetings() {
 }
 
 export async function addGoogleMeeting(
-  _: any,
+  context: GraphqlContextFunctionArgument,
   details: AddMeetingInput & { type: MeetingType; host: string | ObjectId }
 ) {
+  if (!context.auth) throw new Error("Unauthorized access");
+  const userId = context.auth._id;
+  const user = await User.findOne({
+    _id: userId,
+  });
+  if (!user) throw new Error("Unauthorized access");
+  const accessToken = user.integration?.google?.accessToken;
+  const refreshToken = user.integration?.google?.refreshToken;
+  if (!accessToken)
+    throw new GQLError("Missing access token", GQLErrorCodes.NO_ACCESS_TOKEN);
+  console.log("refreshToken", refreshToken);
+  if (refreshToken) {
+    oAuth2Client.setCredentials({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    });
+  } else {
+    oAuth2Client.setCredentials({
+      access_token: accessToken,
+    });
+  }
   const attendees = details.users.map((user) => ({ email: user?.email }));
   const event = {
     summary: details.name,
@@ -73,7 +87,7 @@ export async function addGoogleMeeting(
   };
   try {
     await calendar.events.insert({
-      calendarId: googleMeetCalenderId,
+      calendarId: "primary",
       requestBody: event,
       conferenceDataVersion: 1,
     });

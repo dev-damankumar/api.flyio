@@ -26,5 +26,8 @@ const userMutations = {
     resetPassword: (_, args, context) => __awaiter(void 0, void 0, void 0, function* () {
         return yield user_controller_1.default.resetPassword(context, args);
     }),
+    authorizeIntegrationCalender: (_, args, context) => __awaiter(void 0, void 0, void 0, function* () {
+        return yield user_controller_1.default.authorizeIntegrationCalender(context, args);
+    }),
 };
 exports.default = userMutations;

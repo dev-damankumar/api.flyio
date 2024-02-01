@@ -14,7 +14,7 @@ import { minutesToMillsecond } from "../utils/date";
 import forgotPasswordTemplate from "../templates/forgotPassword";
 import { ExpressContextFunctionArgument } from "@apollo/server/dist/esm/express4";
 import { GraphqlContextFunctionArgument } from "../types";
-import { decodeJWT } from "../utils/auth";
+
 const getUser = async (id: string): Promise<User | null> => {
   const user = await UserModel.findOne<User>({ _id: id });
   return user;
@@ -25,16 +25,9 @@ const getUsers = async (): Promise<User[] | []> => {
   return users;
 };
 
-const createNewUser = async (args: {
-  user: UserCreateInput;
-}): Promise<User | Error> => {
+const createNewUser = async (args: { user: UserCreateInput }) => {
   try {
-    const newUser: Omit<
-      User,
-      "_id" | "createdAt" | "isVerified" | "updatedAt"
-    > = {
-      ...args.user,
-    };
+    const newUser: User = args.user as User;
     const userExists = await UserModel.findOne({
       email: newUser.email,
     });
@@ -44,7 +37,7 @@ const createNewUser = async (args: {
     const hasedPassword = await bcrypt.hash(args.user.password, 10);
     newUser.password = hasedPassword;
     newUser.authType = AuthType.Credentails;
-    const user: User = (await UserModel.create(newUser)) as User;
+    const user = await UserModel.create<User>(newUser);
     user.password = null;
     return user;
   } catch (error) {
@@ -226,6 +219,68 @@ const resetPassword = async (
   }
 };
 
+type TIntegartion = {
+  "google-meet": "google";
+  "microsoft-teams": "microsoft";
+  zoom: "zoom";
+};
+const integration: TIntegartion = {
+  "google-meet": "google",
+  "microsoft-teams": "microsoft",
+  zoom: "zoom",
+};
+
+const authorizeIntegrationCalender = async (
+  context: GraphqlContextFunctionArgument,
+  args: {
+    type: "zoom" | "google-meet" | "microsoft-teams";
+    accessToken: string;
+    refreshToken: string;
+  }
+) => {
+  if (!context.auth) throw new Error("Unauthorized Access");
+  if (!(args.type in integration)) throw new Error("Invalid integration.");
+  const auth = context.auth;
+
+  const user = await UserModel.findOne({ _id: auth._id });
+  if (!user)
+    return {
+      message: "Unauthenticated users are not allowed.",
+      status: 404,
+      type: "error",
+    };
+
+  try {
+    if (!user.integration) {
+      user.integration = {};
+    }
+    const integrationType = integration[args.type];
+
+    user.integration[integrationType] = {
+      accessToken: args.accessToken,
+      refreshToken: args.refreshToken,
+    };
+    await user.save();
+    return {
+      message: "You have successfully integarted your account with google",
+      status: 200,
+      type: "success",
+    };
+  } catch (error) {
+    if (error instanceof Error)
+      return {
+        message: error.message,
+        status: 200,
+        type: "error",
+      };
+    return {
+      message: "Error while reseting your password",
+      status: 200,
+      type: "error",
+    };
+  }
+};
+
 export default {
   getUser,
   getUsers,
@@ -234,4 +289,5 @@ export default {
   loginUser,
   forgotPassword,
   resetPassword,
+  authorizeIntegrationCalender,
 };

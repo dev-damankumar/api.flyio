@@ -3,6 +3,7 @@ import { AddMeetingInput } from "../../generated/graphql";
 import { GraphqlContextFunctionArgument, MeetingType } from "../../types";
 import { addGoogleMeeting, getGoogleMeetings } from "./google-meet";
 import { addFlyIOMeeting } from "./fly-io";
+import { addTeamsMeeting } from "./microsoft-teams";
 
 const meetingTypes = {
   "google-meet": {
@@ -10,7 +11,7 @@ const meetingTypes = {
     get: getGoogleMeetings,
   },
   "microsoft-teams": {
-    add: addGoogleMeeting,
+    add: addTeamsMeeting,
     get: getGoogleMeetings,
   },
   zoom: {

@@ -13,16 +13,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.addGoogleMeeting = exports.getGoogleMeetings = void 0;
+const user_1 = __importDefault(require("../../models/user"));
 const googleapis_1 = require("googleapis");
 const uuid_1 = require("uuid");
 const constants_1 = require("../../constants");
 const meeting_1 = __importDefault(require("../../models/meeting"));
-const gMeetFile = require(constants_1.CREDENTIALS_PATH);
-console.log("gMeetFile", gMeetFile);
-const auth = new googleapis_1.google.auth.JWT(constants_1.googleMeetClientEmail, constants_1.CREDENTIALS_PATH, gMeetFile.private_key, constants_1.SCOPES, constants_1.impersonatedUser);
+const index_1 = require("../index");
+const oAuth2Client = new googleapis_1.google.auth.OAuth2(constants_1.googleClientId, constants_1.googleSecretId);
 const calendar = googleapis_1.google.calendar({
     version: "v3",
-    auth,
+    auth: oAuth2Client,
 });
 function getGoogleMeetings() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -38,8 +38,33 @@ function getGoogleMeetings() {
     });
 }
 exports.getGoogleMeetings = getGoogleMeetings;
-function addGoogleMeeting(_, details) {
+function addGoogleMeeting(context, details) {
+    var _a, _b, _c, _d;
     return __awaiter(this, void 0, void 0, function* () {
+        if (!context.auth)
+            throw new Error("Unauthorized access");
+        const userId = context.auth._id;
+        const user = yield user_1.default.findOne({
+            _id: userId,
+        });
+        if (!user)
+            throw new Error("Unauthorized access");
+        const accessToken = (_b = (_a = user.integration) === null || _a === void 0 ? void 0 : _a.google) === null || _b === void 0 ? void 0 : _b.accessToken;
+        const refreshToken = (_d = (_c = user.integration) === null || _c === void 0 ? void 0 : _c.google) === null || _d === void 0 ? void 0 : _d.refreshToken;
+        if (!accessToken)
+            throw new index_1.GQLError("Missing access token", constants_1.GQLErrorCodes.NO_ACCESS_TOKEN);
+        console.log("refreshToken", refreshToken);
+        if (refreshToken) {
+            oAuth2Client.setCredentials({
+                access_token: accessToken,
+                refresh_token: refreshToken,
+            });
+        }
+        else {
+            oAuth2Client.setCredentials({
+                access_token: accessToken,
+            });
+        }
         const attendees = details.users.map((user) => ({ email: user === null || user === void 0 ? void 0 : user.email }));
         const event = {
             summary: details.name,
@@ -70,7 +95,7 @@ function addGoogleMeeting(_, details) {
         };
         try {
             yield calendar.events.insert({
-                calendarId: constants_1.googleMeetCalenderId,
+                calendarId: "primary",
                 requestBody: event,
                 conferenceDataVersion: 1,
             });

@@ -30,7 +30,7 @@ const getUsers = () => __awaiter(void 0, void 0, void 0, function* () {
 });
 const createNewUser = (args) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const newUser = Object.assign({}, args.user);
+        const newUser = args.user;
         const userExists = yield user_1.default.findOne({
             email: newUser.email,
         });
@@ -40,7 +40,7 @@ const createNewUser = (args) => __awaiter(void 0, void 0, void 0, function* () {
         const hasedPassword = yield bcrypt_1.default.hash(args.user.password, 10);
         newUser.password = hasedPassword;
         newUser.authType = graphql_1.AuthType.Credentails;
-        const user = (yield user_1.default.create(newUser));
+        const user = yield user_1.default.create(newUser);
         user.password = null;
         return user;
     }
@@ -188,6 +188,54 @@ const resetPassword = (context, args) => __awaiter(void 0, void 0, void 0, funct
         };
     }
 });
+const integration = {
+    "google-meet": "google",
+    "microsoft-teams": "microsoft",
+    zoom: "zoom",
+};
+const authorizeIntegrationCalender = (context, args) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!context.auth)
+        throw new Error("Unauthorized Access");
+    if (!(args.type in integration))
+        throw new Error("Invalid integration.");
+    const auth = context.auth;
+    const user = yield user_1.default.findOne({ _id: auth._id });
+    if (!user)
+        return {
+            message: "Unauthenticated users are not allowed.",
+            status: 404,
+            type: "error",
+        };
+    try {
+        if (!user.integration) {
+            user.integration = {};
+        }
+        const integrationType = integration[args.type];
+        user.integration[integrationType] = {
+            accessToken: args.accessToken,
+            refreshToken: args.refreshToken,
+        };
+        yield user.save();
+        return {
+            message: "You have successfully integarted your account with google",
+            status: 200,
+            type: "success",
+        };
+    }
+    catch (error) {
+        if (error instanceof Error)
+            return {
+                message: error.message,
+                status: 200,
+                type: "error",
+            };
+        return {
+            message: "Error while reseting your password",
+            status: 200,
+            type: "error",
+        };
+    }
+});
 exports.default = {
     getUser,
     getUsers,
@@ -196,4 +244,5 @@ exports.default = {
     loginUser,
     forgotPassword,
     resetPassword,
+    authorizeIntegrationCalender,
 };
