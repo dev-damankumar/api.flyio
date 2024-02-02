@@ -1,51 +1,31 @@
 import { ObjectId } from "mongoose";
 import { AddMeetingInput } from "../../generated/graphql";
-import { MeetingType } from "../../types";
+import { GraphqlContextFunctionArgument, MeetingType } from "../../types";
 import { Client } from "@microsoft/microsoft-graph-client";
-import msal from "@azure/msal-node";
-
+import User from "../../models/user";
 import moment from "moment";
-import {
-  microsoftClientId,
-  microsoftSecretValue,
-  microsoftTenentId,
-} from "../../constants";
+import { GQLErrorCodes } from "../../constants";
 import Meeting from "../../models/meeting";
+import { GQLError } from "..";
 
-const clientId = microsoftClientId;
-const clientSecret = microsoftSecretValue;
-const tenantId = microsoftTenentId;
-const scopes = ["https://graph.microsoft.com/.default"];
-
-async function getAccessToken() {
-  const url = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
-  const body = `client_id=${clientId}&scope=${scopes.join(
-    " "
-  )}&client_secret=${clientSecret}&grant_type=client_credentials`;
-
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body,
-  });
-
-  const data = (await response.json()) as { access_token: string };
-  return data.access_token;
-}
 export async function addTeamsMeeting(
-  _: any,
+  context: GraphqlContextFunctionArgument,
   details: AddMeetingInput & { type: MeetingType; host: string | ObjectId }
 ) {
-  const accessToken = await getAccessToken();
-  console.log("accessToken", accessToken);
+  if (!context.auth) throw new Error("Unauthorized access");
+  const userId = context.auth._id;
+  const user = await User.findOne({
+    _id: userId,
+  });
+  if (!user) throw new Error("Unauthorized access");
+  const accessToken = user.integration?.microsoft?.accessToken;
+  if (!accessToken)
+    throw new GQLError("Missing access token", GQLErrorCodes.NO_ACCESS_TOKEN);
   const attendees = details.users.map((user) => ({
     emailAddress: { address: user?.email },
     type: "required",
   }));
-  console.log("attendees", attendees);
-  const graphClient = Client.init({
+  const client = Client.init({
     authProvider: (done) => {
       done(null, accessToken);
     },
@@ -55,9 +35,11 @@ export async function addTeamsMeeting(
     subject: details.name,
     start: {
       dateTime: moment(details.startDate).toISOString(),
+      timeZone: details.location || "Asia/Calcutta",
     },
     end: {
       dateTime: moment(details.endDate).toISOString(),
+      timeZone: details.location || "Asia/Calcutta",
     },
     body: {
       content: details?.description || "Teams Meeting",
@@ -72,12 +54,13 @@ export async function addTeamsMeeting(
         },
         type: "required",
       },
+      ...attendees,
     ],
   };
 
   try {
-    const users = await graphClient.api("/users").get();
-    console.log("users", users);
+    const data = await client.api("/me/events").post({ ...event });
+    console.log(data);
     const meeting = await Meeting.create({ ...details });
     return meeting;
   } catch (error) {
