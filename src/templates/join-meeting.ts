@@ -1,5 +1,6 @@
-export default function forgotPasswordTemplate(username: string, link: string) {
-  const html = `<!DOCTYPE html>
+export default function (username: string, description: string, link: string) {
+  return `
+    <!DOCTYPE html>
 <html
   xmlns:v="urn:schemas-microsoft-com:vml"
   xmlns:o="urn:schemas-microsoft-com:office:office"
@@ -294,7 +295,7 @@ export default function forgotPasswordTemplate(username: string, link: string) {
                                     <div
                                       style="max-width: 147.33333333333331px"
                                     >
-                                     <a
+                                      <a
                                         style="
                                           display: flex;
                                           align-items: center;
@@ -704,8 +705,8 @@ export default function forgotPasswordTemplate(username: string, link: string) {
                                       mso-line-height-alt: 32.4px;
                                     "
                                   >
-                                    Hi! ${username}<br/>
-                                    <strong style="margin-top: 10px;display: block;">Forgot Your Password?</strong>
+                                    Hi! ${username} you got
+                                    <strong>Meeting Invitation </strong>
                                   </h1>
                                 </td>
                               </tr>
@@ -833,10 +834,10 @@ export default function forgotPasswordTemplate(username: string, link: string) {
                                       style="margin: 0; word-break: break-word"
                                     >
                                       <span>
-                                        Click on the link below in order to rest
-                                        your password you will be redirected to
-                                        our site. There you can reset your
-                                        password to a new one.
+                                        ${
+                                          description ||
+                                          'Join the meeting to discuss the project progress. '
+                                        }
                                       </span>
                                     </p>
                                   </div>
@@ -911,7 +912,7 @@ export default function forgotPasswordTemplate(username: string, link: string) {
                                             word-break: break-word;
                                             line-height: 32px;
                                           "
-                                          >Reset Password</span
+                                          >Join Now</span
                                         >
                                       </span></a
                                     >
@@ -1259,7 +1260,5 @@ export default function forgotPasswordTemplate(username: string, link: string) {
     <!-- End -->
   </body>
 </html>
-`;
-
-  return html;
+    `;
 }

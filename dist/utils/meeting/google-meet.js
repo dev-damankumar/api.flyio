@@ -21,7 +21,7 @@ const meeting_1 = __importDefault(require("../../models/meeting"));
 const index_1 = require("../index");
 const oAuth2Client = new googleapis_1.google.auth.OAuth2(constants_1.googleClientId, constants_1.googleSecretId);
 const calendar = googleapis_1.google.calendar({
-    version: "v3",
+    version: 'v3',
     auth: oAuth2Client,
 });
 function getGoogleMeetings() {
@@ -31,7 +31,7 @@ function getGoogleMeetings() {
             timeMin: new Date().toISOString(),
             maxResults: 10,
             singleEvents: true,
-            orderBy: "startTime",
+            orderBy: 'startTime',
         });
         const meetings = result.data.items;
         return meetings;
@@ -42,18 +42,17 @@ function addGoogleMeeting(context, details) {
     var _a, _b, _c, _d;
     return __awaiter(this, void 0, void 0, function* () {
         if (!context.auth)
-            throw new Error("Unauthorized access");
+            throw new Error('Unauthorized access');
         const userId = context.auth._id;
         const user = yield user_1.default.findOne({
             _id: userId,
         });
         if (!user)
-            throw new Error("Unauthorized access");
+            throw new Error('Unauthorized access');
         const accessToken = (_b = (_a = user.integration) === null || _a === void 0 ? void 0 : _a.google) === null || _b === void 0 ? void 0 : _b.accessToken;
         const refreshToken = (_d = (_c = user.integration) === null || _c === void 0 ? void 0 : _c.google) === null || _d === void 0 ? void 0 : _d.refreshToken;
         if (!accessToken)
-            throw new index_1.GQLError("Missing access token", constants_1.GQLErrorCodes.NO_ACCESS_TOKEN);
-        console.log("refreshToken", refreshToken);
+            throw new index_1.GQLError('Missing access token', constants_1.GQLErrorCodes.NO_ACCESS_TOKEN);
         if (refreshToken) {
             oAuth2Client.setCredentials({
                 access_token: accessToken,
@@ -80,22 +79,22 @@ function addGoogleMeeting(context, details) {
             reminders: {
                 useDefault: false,
                 overrides: [
-                    { method: "email", minutes: 24 * 60 },
-                    { method: "popup", minutes: 10 },
+                    { method: 'email', minutes: 24 * 60 },
+                    { method: 'popup', minutes: 10 },
                 ],
             },
             conferenceData: {
                 createRequest: {
                     requestId: (0, uuid_1.v4)(),
                     conferenceSolutionKey: {
-                        type: "hangoutsMeet",
+                        type: 'hangoutsMeet',
                     },
                 },
             },
         };
         try {
             yield calendar.events.insert({
-                calendarId: "primary",
+                calendarId: 'primary',
                 requestBody: event,
                 conferenceDataVersion: 1,
             });
@@ -103,8 +102,8 @@ function addGoogleMeeting(context, details) {
             return meeting;
         }
         catch (error) {
-            console.log("There was an error contacting the Calendar service: " + error);
-            throw new Error("There was an error while creating event");
+            console.log('There was an error contacting the Calendar service: ' + error);
+            throw new Error('There was an error while creating event');
         }
     });
 }

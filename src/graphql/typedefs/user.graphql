@@ -14,10 +14,19 @@ type User implements Timestamps {
   # Interface required
   createdAt: Date!
   updatedAt: Date!
+  integration: Integration
 }
-
+type TIntegration {
+  authorized: Boolean
+}
+type Integration {
+  google: TIntegration
+  microsoft: TIntegration
+  zoom: TIntegration
+}
 type PublicUser implements Timestamps {
   _id: ID!
+  id: ID!
   firstname: String!
   lastname: String!
   username: String!
@@ -29,6 +38,7 @@ type PublicUser implements Timestamps {
   # Interface required
   createdAt: Date!
   updatedAt: Date!
+  integration: Integration
 }
 
 type LoggedInUser implements Timestamps {
@@ -45,6 +55,7 @@ type LoggedInUser implements Timestamps {
   # Interface required
   createdAt: Date!
   updatedAt: Date!
+  integration: Integration
 }
 
 type Address {

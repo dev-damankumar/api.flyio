@@ -17,7 +17,7 @@ const date_1 = require("../utils/date");
 const index_1 = require("../utils/meeting/index");
 const getMeetingsHandler = (context, data) => __awaiter(void 0, void 0, void 0, function* () {
     if (!context.auth)
-        throw new Error("Unauthorized access");
+        throw new Error('Unauthorized access');
     const match = { host: context.auth._id };
     if (data === null || data === void 0 ? void 0 : data.today) {
         const { todayEndDate, todayStartDate } = (0, date_1.getTodayDateRange)();
@@ -27,23 +27,23 @@ const getMeetingsHandler = (context, data) => __awaiter(void 0, void 0, void 0, 
         const { tommorrowEndDate, tommorrowStartDate } = (0, date_1.getTommorrowDateRange)();
         match.startDate = { $gte: tommorrowStartDate, $lt: tommorrowEndDate };
     }
-    const meetings = yield meeting_1.default.find(match).sort("startDate").exec();
+    const meetings = yield meeting_1.default.find(match).sort('startDate').exec();
     return meetings;
 });
 const addMeetingHandler = (context, data) => __awaiter(void 0, void 0, void 0, function* () {
     if (!context.auth)
-        throw new Error("Unauthorized access");
+        throw new Error('Unauthorized access');
     const host = context.auth._id;
     return yield (0, index_1.addMeeting)(context, data.type, Object.assign(Object.assign({}, data), { host }));
 });
 const checkIfUserisInvited = (context, data) => __awaiter(void 0, void 0, void 0, function* () {
     if (!context.auth)
-        throw new Error("Unauthorized access");
+        throw new Error('Unauthorized access');
     const userId = context.auth._id;
     const meetingId = data.meetingId;
     const user = yield meeting_1.default.findOne({
         meetingId,
-        $or: [{ host: userId }, { "users._id": userId }],
+        $or: [{ host: userId }, { 'users._id': userId }],
     });
     return { verified: !!user };
 });

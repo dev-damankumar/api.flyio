@@ -1,6 +1,7 @@
 type Query {
   users: [PublicUser]!
   user(id: ID!): PublicUser
+  me: PublicUser
   login(email: String!, password: String!): LoggedInUser
   getStats: Stats!
   getMeetings(filter: IMeetingFilter): [Meeting]!

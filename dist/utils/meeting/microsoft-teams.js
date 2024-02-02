@@ -23,19 +23,19 @@ function addTeamsMeeting(context, details) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         if (!context.auth)
-            throw new Error("Unauthorized access");
+            throw new Error('Unauthorized access');
         const userId = context.auth._id;
         const user = yield user_1.default.findOne({
             _id: userId,
         });
         if (!user)
-            throw new Error("Unauthorized access");
+            throw new Error('Unauthorized access');
         const accessToken = (_b = (_a = user.integration) === null || _a === void 0 ? void 0 : _a.microsoft) === null || _b === void 0 ? void 0 : _b.accessToken;
         if (!accessToken)
-            throw new __1.GQLError("Missing access token", constants_1.GQLErrorCodes.NO_ACCESS_TOKEN);
+            throw new __1.GQLError('Missing access token', constants_1.GQLErrorCodes.NO_ACCESS_TOKEN);
         const attendees = details.users.map((user) => ({
             emailAddress: { address: user === null || user === void 0 ? void 0 : user.email },
-            type: "required",
+            type: 'required',
         }));
         const client = microsoft_graph_client_1.Client.init({
             authProvider: (done) => {
@@ -46,30 +46,30 @@ function addTeamsMeeting(context, details) {
             subject: details.name,
             start: {
                 dateTime: (0, moment_1.default)(details.startDate).toISOString(),
-                timeZone: details.location || "Asia/Calcutta",
+                timeZone: details.location || 'Asia/Calcutta',
             },
             end: {
                 dateTime: (0, moment_1.default)(details.endDate).toISOString(),
-                timeZone: details.location || "Asia/Calcutta",
+                timeZone: details.location || 'Asia/Calcutta',
             },
             body: {
-                content: (details === null || details === void 0 ? void 0 : details.description) || "Teams Meeting",
-                contentType: "HTML",
+                content: (details === null || details === void 0 ? void 0 : details.description) || 'Teams Meeting',
+                contentType: 'HTML',
             },
             isOnlineMeeting: true,
-            onlineMeetingProvider: "teamsForBusiness",
+            onlineMeetingProvider: 'teamsForBusiness',
             attendees: [
                 {
                     emailAddress: {
                         address: details.host,
                     },
-                    type: "required",
+                    type: 'required',
                 },
                 ...attendees,
             ],
         };
         try {
-            const data = yield client.api("/me/events").post(Object.assign({}, event));
+            const data = yield client.api('/me/events').post(Object.assign({}, event));
             console.log(data);
             const meeting = yield meeting_1.default.create(Object.assign({}, details));
             return meeting;

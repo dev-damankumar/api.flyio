@@ -1,23 +1,43 @@
 import {
   AuthType,
   LoggedInUser,
+  Response,
+  ResponseType,
   User,
   UserCreateInput,
   UserUpdateInput,
-} from "./../generated/graphql";
-import UserModel from "../models/user";
-import jwt from "jsonwebtoken";
-import bcrypt from "bcrypt";
-import { jwtSecret, siteurl } from "../constants";
-import { send } from "../utils/email";
-import { minutesToMillsecond } from "../utils/date";
-import forgotPasswordTemplate from "../templates/forgotPassword";
-import { ExpressContextFunctionArgument } from "@apollo/server/dist/esm/express4";
-import { GraphqlContextFunctionArgument } from "../types";
+} from './../generated/graphql';
+import UserModel from '../models/user';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
+import { jwtSecret, siteurl } from '../constants';
+import { send } from '../utils/email';
+import { minutesToMillsecond } from '../utils/date';
+import forgotPasswordTemplate from '../templates/forgotPassword';
+import { ExpressContextFunctionArgument } from '@apollo/server/dist/esm/express4';
+import { GraphqlContextFunctionArgument } from '../types';
 
 const getUser = async (id: string): Promise<User | null> => {
   const user = await UserModel.findOne<User>({ _id: id });
   return user;
+};
+
+const me = async (
+  context: GraphqlContextFunctionArgument
+): Promise<User | Response> => {
+  if (!context.auth) throw new Error('Unauthorized Access');
+  console.log('context.auth', context.auth);
+  const user = await UserModel.findOne<User>({ _id: context.auth._id });
+  if (!user)
+    return {
+      message: 'Unauthenticated users are not allowed.',
+      status: 404,
+      type: ResponseType.Error,
+    };
+
+  console.log('user', user);
+
+  return user as User;
 };
 
 const getUsers = async (): Promise<User[] | []> => {
@@ -32,7 +52,7 @@ const createNewUser = async (args: { user: UserCreateInput }) => {
       email: newUser.email,
     });
     if (userExists) {
-      throw new Error("user already exists");
+      throw new Error('user already exists');
     }
     const hasedPassword = await bcrypt.hash(args.user.password, 10);
     newUser.password = hasedPassword;
@@ -42,10 +62,10 @@ const createNewUser = async (args: { user: UserCreateInput }) => {
     return user;
   } catch (error) {
     if (error instanceof Error) {
-      console.log("Error on: (createNewUser) ", error.message);
+      console.log('Error on: (createNewUser) ', error.message);
       throw new Error(error.message);
     }
-    throw new Error("user already exists");
+    throw new Error('user already exists');
   }
 };
 const updateAnUser = async (
@@ -53,7 +73,7 @@ const updateAnUser = async (
   context: GraphqlContextFunctionArgument
 ): Promise<User> => {
   try {
-    if (!context.auth) throw new Error("Unauthorized Access");
+    if (!context.auth) throw new Error('Unauthorized Access');
     const newUser = args.user;
     const user = (await UserModel.findOneAndUpdate(
       { email: context.auth.email },
@@ -71,10 +91,10 @@ const updateAnUser = async (
     return updatedUser;
   } catch (error) {
     if (error instanceof Error) {
-      console.log("Error on: (updateAnUser) ", error.message);
+      console.log('Error on: (updateAnUser) ', error.message);
       throw new Error(error.message);
     }
-    throw new Error("user counld not be updated!!");
+    throw new Error('user counld not be updated!!');
   }
 };
 
@@ -88,7 +108,7 @@ const loginUser = async (
       authType: AuthType.Credentails,
     })) as User & { _doc: User };
     if (!userExists) {
-      throw new Error("user does not exists");
+      throw new Error('user does not exists');
     }
 
     const isValidPassword = await bcrypt.compare(
@@ -96,13 +116,13 @@ const loginUser = async (
       userExists.password!
     );
     if (!isValidPassword) {
-      throw new Error("password is not correct!");
+      throw new Error('password is not correct!');
     }
 
     const token = await jwt.sign(
       { email: userExists.email, _id: userExists.id },
       jwtSecret,
-      { expiresIn: "24h" }
+      { expiresIn: '24h' }
     );
     const user = {
       ...userExists._doc,
@@ -112,16 +132,16 @@ const loginUser = async (
     return user as LoggedInUser;
   } catch (error) {
     if (error instanceof Error) {
-      console.log("error", error.message);
+      console.log('error', error.message);
       throw new Error(error.message);
     }
-    throw new Error("user does not exists");
+    throw new Error('user does not exists');
   }
 };
 
 const forgotPassword = async (args: { email: string }) => {
   const user = await UserModel.findOne({ email: args.email });
-  if (!user) throw new Error("No user found with this email");
+  if (!user) throw new Error('No user found with this email');
   try {
     if (
       user?.security?.resetPassword?.token &&
@@ -132,14 +152,14 @@ const forgotPassword = async (args: { email: string }) => {
       if (now < tokenExpiryDate) {
         return {
           message:
-            "We have already sent a link to your email to reset a password",
+            'We have already sent a link to your email to reset a password',
           status: 200,
-          type: "success",
+          type: 'success',
         };
       }
     }
     const token = await jwt.sign({ email: args.email }, jwtSecret, {
-      expiresIn: "5m",
+      expiresIn: '5m',
     });
 
     if (!user.security) {
@@ -155,26 +175,26 @@ const forgotPassword = async (args: { email: string }) => {
     const resetPasswordLink = `${siteurl}/auth/reset-password?token=${token}`;
     await send({
       to: args.email,
-      subject: "Forgot Password",
-      body: forgotPasswordTemplate(user.username, resetPasswordLink),
+      subject: 'Forgot Password',
+      html: forgotPasswordTemplate(user.username, resetPasswordLink),
     });
     return {
       message:
-        "We have successfully send a link to your email to reset a password",
+        'We have successfully send a link to your email to reset a password',
       status: 200,
-      type: "success",
+      type: 'success',
     };
   } catch (error) {
     if (error instanceof Error)
       return {
         message: error.message,
         status: 200,
-        type: "error",
+        type: 'error',
       };
     return {
-      message: "Error sending email to the mail",
+      message: 'Error sending email to the mail',
       status: 200,
-      type: "error",
+      type: 'error',
     };
   }
 };
@@ -184,13 +204,13 @@ const resetPassword = async (
   args: { token: string; password: string }
 ) => {
   const user = await UserModel.findOne({
-    "security.resetPassword.token": args.token,
+    'security.resetPassword.token': args.token,
   });
   if (!user)
     return {
-      message: "Your reset link has been expired!",
+      message: 'Your reset link has been expired!',
       status: 404,
-      type: "error",
+      type: 'error',
     };
 
   try {
@@ -200,54 +220,54 @@ const resetPassword = async (
     user.password = hasedPassword;
     await user.save();
     return {
-      message: "We have successfully reset your password",
+      message: 'We have successfully reset your password',
       status: 200,
-      type: "success",
+      type: 'success',
     };
   } catch (error) {
     if (error instanceof Error)
       return {
         message: error.message,
         status: 200,
-        type: "error",
+        type: 'error',
       };
     return {
-      message: "Error while reseting your password",
+      message: 'Error while reseting your password',
       status: 200,
-      type: "error",
+      type: 'error',
     };
   }
 };
 
 type TIntegartion = {
-  "google-meet": "google";
-  "microsoft-teams": "microsoft";
-  zoom: "zoom";
+  'google-meet': 'google';
+  'microsoft-teams': 'microsoft';
+  zoom: 'zoom';
 };
 const integration: TIntegartion = {
-  "google-meet": "google",
-  "microsoft-teams": "microsoft",
-  zoom: "zoom",
+  'google-meet': 'google',
+  'microsoft-teams': 'microsoft',
+  zoom: 'zoom',
 };
 
 const authorizeIntegrationCalender = async (
   context: GraphqlContextFunctionArgument,
   args: {
-    type: "zoom" | "google-meet" | "microsoft-teams";
+    type: 'zoom' | 'google-meet' | 'microsoft-teams';
     accessToken: string;
     refreshToken: string;
   }
 ) => {
-  if (!context.auth) throw new Error("Unauthorized Access");
-  if (!(args.type in integration)) throw new Error("Invalid integration.");
+  if (!context.auth) throw new Error('Unauthorized Access');
+  if (!(args.type in integration)) throw new Error('Invalid integration.');
   const auth = context.auth;
 
   const user = await UserModel.findOne({ _id: auth._id });
   if (!user)
     return {
-      message: "Unauthenticated users are not allowed.",
+      message: 'Unauthenticated users are not allowed.',
       status: 404,
-      type: "error",
+      type: 'error',
     };
 
   try {
@@ -259,29 +279,31 @@ const authorizeIntegrationCalender = async (
     user.integration[integrationType] = {
       accessToken: args.accessToken,
       refreshToken: args.refreshToken,
+      authorized: true,
     };
     await user.save();
     return {
-      message: "You have successfully integarted your account with google",
+      message: 'You have successfully integarted your account with google',
       status: 200,
-      type: "success",
+      type: 'success',
     };
   } catch (error) {
     if (error instanceof Error)
       return {
         message: error.message,
         status: 200,
-        type: "error",
+        type: 'error',
       };
     return {
-      message: "Error while reseting your password",
+      message: 'Error while reseting your password',
       status: 200,
-      type: "error",
+      type: 'error',
     };
   }
 };
 
 export default {
+  me,
   getUser,
   getUsers,
   createNewUser,

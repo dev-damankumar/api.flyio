@@ -1,14 +1,14 @@
-import { AddMeetingInput, IMeetingFilter } from "../generated/graphql";
-import Meeting from "../models/meeting";
-import { GraphqlContextFunctionArgument, MeetingType } from "../types";
-import { getTodayDateRange, getTommorrowDateRange } from "../utils/date";
-import { addMeeting } from "../utils/meeting/index";
+import { AddMeetingInput, IMeetingFilter } from '../generated/graphql';
+import Meeting from '../models/meeting';
+import { GraphqlContextFunctionArgument, MeetingType } from '../types';
+import { getTodayDateRange, getTommorrowDateRange } from '../utils/date';
+import { addMeeting } from '../utils/meeting/index';
 
 const getMeetingsHandler = async (
   context: GraphqlContextFunctionArgument,
   data: IMeetingFilter
 ) => {
-  if (!context.auth) throw new Error("Unauthorized access");
+  if (!context.auth) throw new Error('Unauthorized access');
   const match: { [any: string]: any } = { host: context.auth._id };
   if (data?.today) {
     const { todayEndDate, todayStartDate } = getTodayDateRange();
@@ -18,7 +18,7 @@ const getMeetingsHandler = async (
     const { tommorrowEndDate, tommorrowStartDate } = getTommorrowDateRange();
     match.startDate = { $gte: tommorrowStartDate, $lt: tommorrowEndDate };
   }
-  const meetings = await Meeting.find(match).sort("startDate").exec();
+  const meetings = await Meeting.find(match).sort('startDate').exec();
   return meetings;
 };
 
@@ -26,7 +26,7 @@ const addMeetingHandler = async (
   context: GraphqlContextFunctionArgument,
   data: AddMeetingInput & { type: MeetingType }
 ) => {
-  if (!context.auth) throw new Error("Unauthorized access");
+  if (!context.auth) throw new Error('Unauthorized access');
   const host = context.auth._id;
   return await addMeeting(context, data.type, { ...data, host });
 };
@@ -35,12 +35,12 @@ const checkIfUserisInvited = async (
   context: GraphqlContextFunctionArgument,
   data: { meetingId: string }
 ) => {
-  if (!context.auth) throw new Error("Unauthorized access");
+  if (!context.auth) throw new Error('Unauthorized access');
   const userId = context.auth._id;
   const meetingId = data.meetingId;
   const user = await Meeting.findOne({
     meetingId,
-    $or: [{ host: userId }, { "users._id": userId }],
+    $or: [{ host: userId }, { 'users._id': userId }],
   });
 
   return { verified: !!user };

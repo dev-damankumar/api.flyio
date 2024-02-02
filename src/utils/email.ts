@@ -1,33 +1,30 @@
-import nodemailer, { TestAccount } from "nodemailer";
-const sgMail = require("@sendgrid/mail");
+import nodemailer, { TestAccount } from 'nodemailer';
+import sgMail from '@sendgrid/mail';
 
-import { promisify } from "util";
-import { _prod_, email, mockSMTP } from "../constants";
+import { promisify } from 'util';
+import { _prod_, email, mockSMTP, sendGridApiKey } from '../constants';
 
-type EmailType = {
-  to: string;
-  subject: string;
-  body: string;
-};
-export const send = async ({ to, subject, body }: EmailType) => {
+type EmailType = { to: string; subject: string; html: string; cc?: string };
+export const send = async ({ to, subject, html, cc = '' }: EmailType) => {
   const mailOptions = {
-    from: email.from,
+    from: email.from!,
     to,
     subject,
-    html: body,
+    html,
+    cc,
   };
 
   if (_prod_ && !mockSMTP) {
-    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    sgMail.setApiKey(sendGridApiKey);
     const info = await sgMail.send(mailOptions);
-    console.log("Email Sent!!:", info);
+    console.log('Email Sent!!:', info);
     return;
   }
   const account = await promisify<TestAccount>(nodemailer.createTestAccount)();
-  console.log("Test email account created", account);
+  console.log('Test email account created', account);
 
   const transporter = nodemailer.createTransport({
-    host: "smtp.ethereal.email",
+    host: 'smtp.ethereal.email',
     port: 587,
     secure: false, // true for 465, false for other ports
     auth: {
@@ -37,5 +34,5 @@ export const send = async ({ to, subject, body }: EmailType) => {
   });
 
   const info = await transporter.sendMail(mailOptions);
-  console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+  console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
 };

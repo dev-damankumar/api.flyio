@@ -41,14 +41,26 @@ const userSchema = new Schema(
     },
     integration: {
       google: {
+        authorized: {
+          type: Boolean,
+          default: false,
+        },
         accessToken: String,
         refreshToken: String,
       },
       microsoft: {
+        authorized: {
+          type: Boolean,
+          default: false,
+        },
         accessToken: String,
         refreshToken: String,
       },
       zoom: {
+        authorized: {
+          type: Boolean,
+          default: false,
+        },
         accessToken: String,
         refreshToken: String,
       },

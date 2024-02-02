@@ -17,6 +17,10 @@ const userQueries = {
     users: () => __awaiter(void 0, void 0, void 0, function* () {
         return yield user_controller_1.default.getUsers();
     }),
+    me: (_, args, context) => __awaiter(void 0, void 0, void 0, function* () {
+        console.log("ok", context);
+        return yield user_controller_1.default.me(context);
+    }),
     user: (_, args) => __awaiter(void 0, void 0, void 0, function* () {
         return yield user_controller_1.default.getUser(args.id);
     }),

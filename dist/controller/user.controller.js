@@ -24,6 +24,20 @@ const getUser = (id) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield user_1.default.findOne({ _id: id });
     return user;
 });
+const me = (context) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!context.auth)
+        throw new Error('Unauthorized Access');
+    console.log('context.auth', context.auth);
+    const user = yield user_1.default.findOne({ _id: context.auth._id });
+    if (!user)
+        return {
+            message: 'Unauthenticated users are not allowed.',
+            status: 404,
+            type: graphql_1.ResponseType.Error,
+        };
+    console.log('user', user);
+    return user;
+});
 const getUsers = () => __awaiter(void 0, void 0, void 0, function* () {
     const users = yield user_1.default.find({});
     return users;
@@ -35,7 +49,7 @@ const createNewUser = (args) => __awaiter(void 0, void 0, void 0, function* () {
             email: newUser.email,
         });
         if (userExists) {
-            throw new Error("user already exists");
+            throw new Error('user already exists');
         }
         const hasedPassword = yield bcrypt_1.default.hash(args.user.password, 10);
         newUser.password = hasedPassword;
@@ -46,16 +60,16 @@ const createNewUser = (args) => __awaiter(void 0, void 0, void 0, function* () {
     }
     catch (error) {
         if (error instanceof Error) {
-            console.log("Error on: (createNewUser) ", error.message);
+            console.log('Error on: (createNewUser) ', error.message);
             throw new Error(error.message);
         }
-        throw new Error("user already exists");
+        throw new Error('user already exists');
     }
 });
 const updateAnUser = (args, context) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         if (!context.auth)
-            throw new Error("Unauthorized Access");
+            throw new Error('Unauthorized Access');
         const newUser = args.user;
         const user = (yield user_1.default.findOneAndUpdate({ email: context.auth.email }, newUser));
         if (!user)
@@ -66,10 +80,10 @@ const updateAnUser = (args, context) => __awaiter(void 0, void 0, void 0, functi
     }
     catch (error) {
         if (error instanceof Error) {
-            console.log("Error on: (updateAnUser) ", error.message);
+            console.log('Error on: (updateAnUser) ', error.message);
             throw new Error(error.message);
         }
-        throw new Error("user counld not be updated!!");
+        throw new Error('user counld not be updated!!');
     }
 });
 const loginUser = (email, password) => __awaiter(void 0, void 0, void 0, function* () {
@@ -79,29 +93,29 @@ const loginUser = (email, password) => __awaiter(void 0, void 0, void 0, functio
             authType: graphql_1.AuthType.Credentails,
         }));
         if (!userExists) {
-            throw new Error("user does not exists");
+            throw new Error('user does not exists');
         }
         const isValidPassword = yield bcrypt_1.default.compare(password, userExists.password);
         if (!isValidPassword) {
-            throw new Error("password is not correct!");
+            throw new Error('password is not correct!');
         }
-        const token = yield jsonwebtoken_1.default.sign({ email: userExists.email, _id: userExists.id }, constants_1.jwtSecret, { expiresIn: "24h" });
+        const token = yield jsonwebtoken_1.default.sign({ email: userExists.email, _id: userExists.id }, constants_1.jwtSecret, { expiresIn: '24h' });
         const user = Object.assign(Object.assign({}, userExists._doc), { token });
         return user;
     }
     catch (error) {
         if (error instanceof Error) {
-            console.log("error", error.message);
+            console.log('error', error.message);
             throw new Error(error.message);
         }
-        throw new Error("user does not exists");
+        throw new Error('user does not exists');
     }
 });
 const forgotPassword = (args) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d, _e, _f;
     const user = yield user_1.default.findOne({ email: args.email });
     if (!user)
-        throw new Error("No user found with this email");
+        throw new Error('No user found with this email');
     try {
         if (((_b = (_a = user === null || user === void 0 ? void 0 : user.security) === null || _a === void 0 ? void 0 : _a.resetPassword) === null || _b === void 0 ? void 0 : _b.token) &&
             ((_d = (_c = user === null || user === void 0 ? void 0 : user.security) === null || _c === void 0 ? void 0 : _c.resetPassword) === null || _d === void 0 ? void 0 : _d.expiry)) {
@@ -109,14 +123,14 @@ const forgotPassword = (args) => __awaiter(void 0, void 0, void 0, function* () 
             const now = new Date();
             if (now < tokenExpiryDate) {
                 return {
-                    message: "We have already sent a link to your email to reset a password",
+                    message: 'We have already sent a link to your email to reset a password',
                     status: 200,
-                    type: "success",
+                    type: 'success',
                 };
             }
         }
         const token = yield jsonwebtoken_1.default.sign({ email: args.email }, constants_1.jwtSecret, {
-            expiresIn: "5m",
+            expiresIn: '5m',
         });
         if (!user.security) {
             user.security = { resetPassword: {}, verification: {} };
@@ -129,13 +143,13 @@ const forgotPassword = (args) => __awaiter(void 0, void 0, void 0, function* () 
         const resetPasswordLink = `${constants_1.siteurl}/auth/reset-password?token=${token}`;
         yield (0, email_1.send)({
             to: args.email,
-            subject: "Forgot Password",
-            body: (0, forgotPassword_1.default)(user.username, resetPasswordLink),
+            subject: 'Forgot Password',
+            html: (0, forgotPassword_1.default)(user.username, resetPasswordLink),
         });
         return {
-            message: "We have successfully send a link to your email to reset a password",
+            message: 'We have successfully send a link to your email to reset a password',
             status: 200,
-            type: "success",
+            type: 'success',
         };
     }
     catch (error) {
@@ -143,24 +157,24 @@ const forgotPassword = (args) => __awaiter(void 0, void 0, void 0, function* () 
             return {
                 message: error.message,
                 status: 200,
-                type: "error",
+                type: 'error',
             };
         return {
-            message: "Error sending email to the mail",
+            message: 'Error sending email to the mail',
             status: 200,
-            type: "error",
+            type: 'error',
         };
     }
 });
 const resetPassword = (context, args) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield user_1.default.findOne({
-        "security.resetPassword.token": args.token,
+        'security.resetPassword.token': args.token,
     });
     if (!user)
         return {
-            message: "Your reset link has been expired!",
+            message: 'Your reset link has been expired!',
             status: 404,
-            type: "error",
+            type: 'error',
         };
     try {
         user.security.resetPassword.token = null;
@@ -169,9 +183,9 @@ const resetPassword = (context, args) => __awaiter(void 0, void 0, void 0, funct
         user.password = hasedPassword;
         yield user.save();
         return {
-            message: "We have successfully reset your password",
+            message: 'We have successfully reset your password',
             status: 200,
-            type: "success",
+            type: 'success',
         };
     }
     catch (error) {
@@ -179,32 +193,32 @@ const resetPassword = (context, args) => __awaiter(void 0, void 0, void 0, funct
             return {
                 message: error.message,
                 status: 200,
-                type: "error",
+                type: 'error',
             };
         return {
-            message: "Error while reseting your password",
+            message: 'Error while reseting your password',
             status: 200,
-            type: "error",
+            type: 'error',
         };
     }
 });
 const integration = {
-    "google-meet": "google",
-    "microsoft-teams": "microsoft",
-    zoom: "zoom",
+    'google-meet': 'google',
+    'microsoft-teams': 'microsoft',
+    zoom: 'zoom',
 };
 const authorizeIntegrationCalender = (context, args) => __awaiter(void 0, void 0, void 0, function* () {
     if (!context.auth)
-        throw new Error("Unauthorized Access");
+        throw new Error('Unauthorized Access');
     if (!(args.type in integration))
-        throw new Error("Invalid integration.");
+        throw new Error('Invalid integration.');
     const auth = context.auth;
     const user = yield user_1.default.findOne({ _id: auth._id });
     if (!user)
         return {
-            message: "Unauthenticated users are not allowed.",
+            message: 'Unauthenticated users are not allowed.',
             status: 404,
-            type: "error",
+            type: 'error',
         };
     try {
         if (!user.integration) {
@@ -214,12 +228,13 @@ const authorizeIntegrationCalender = (context, args) => __awaiter(void 0, void 0
         user.integration[integrationType] = {
             accessToken: args.accessToken,
             refreshToken: args.refreshToken,
+            authorized: true,
         };
         yield user.save();
         return {
-            message: "You have successfully integarted your account with google",
+            message: 'You have successfully integarted your account with google',
             status: 200,
-            type: "success",
+            type: 'success',
         };
     }
     catch (error) {
@@ -227,16 +242,17 @@ const authorizeIntegrationCalender = (context, args) => __awaiter(void 0, void 0
             return {
                 message: error.message,
                 status: 200,
-                type: "error",
+                type: 'error',
             };
         return {
-            message: "Error while reseting your password",
+            message: 'Error while reseting your password',
             status: 200,
-            type: "error",
+            type: 'error',
         };
     }
 });
 exports.default = {
+    me,
     getUser,
     getUsers,
     createNewUser,
