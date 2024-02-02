@@ -13,22 +13,19 @@ exports.addMeeting = void 0;
 const google_meet_1 = require("./google-meet");
 const fly_io_1 = require("./fly-io");
 const microsoft_teams_1 = require("./microsoft-teams");
+const zoom_1 = require("./zoom");
 const meetingTypes = {
-    "google-meet": {
+    'google-meet': {
         add: google_meet_1.addGoogleMeeting,
-        get: google_meet_1.getGoogleMeetings,
     },
-    "microsoft-teams": {
+    'microsoft-teams': {
         add: microsoft_teams_1.addTeamsMeeting,
-        get: google_meet_1.getGoogleMeetings,
     },
     zoom: {
-        add: google_meet_1.addGoogleMeeting,
-        get: google_meet_1.getGoogleMeetings,
+        add: zoom_1.addZoomMeeting,
     },
-    "fly-io": {
+    'fly-io': {
         add: fly_io_1.addFlyIOMeeting,
-        get: google_meet_1.getGoogleMeetings,
     },
 };
 function addMeeting(context, type, details) {

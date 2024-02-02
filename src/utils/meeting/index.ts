@@ -1,26 +1,23 @@
-import { ObjectId } from "mongoose";
-import { AddMeetingInput } from "../../generated/graphql";
-import { GraphqlContextFunctionArgument, MeetingType } from "../../types";
-import { addGoogleMeeting, getGoogleMeetings } from "./google-meet";
-import { addFlyIOMeeting } from "./fly-io";
-import { addTeamsMeeting } from "./microsoft-teams";
+import { ObjectId } from 'mongoose';
+import { AddMeetingInput } from '../../generated/graphql';
+import { GraphqlContextFunctionArgument, MeetingType } from '../../types';
+import { addGoogleMeeting } from './google-meet';
+import { addFlyIOMeeting } from './fly-io';
+import { addTeamsMeeting } from './microsoft-teams';
+import { addZoomMeeting } from './zoom';
 
 const meetingTypes = {
-  "google-meet": {
+  'google-meet': {
     add: addGoogleMeeting,
-    get: getGoogleMeetings,
   },
-  "microsoft-teams": {
+  'microsoft-teams': {
     add: addTeamsMeeting,
-    get: getGoogleMeetings,
   },
   zoom: {
-    add: addGoogleMeeting,
-    get: getGoogleMeetings,
+    add: addZoomMeeting,
   },
-  "fly-io": {
+  'fly-io': {
     add: addFlyIOMeeting,
-    get: getGoogleMeetings,
   },
 };
 export async function addMeeting(

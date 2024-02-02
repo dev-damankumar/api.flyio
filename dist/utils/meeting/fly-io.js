@@ -34,7 +34,7 @@ function addFlyIOMeeting(context, details) {
             const meet = yield meeting_1.default.create(event);
             yield (0, email_1.send)({
                 to: user.email,
-                subject: 'Forgot Password',
+                subject: 'Fly io Meeting Invite',
                 html: (0, join_meeting_1.default)('User', details.description || '', `${constants_1.siteurl}/${event.url}`),
                 cc: attendees.join(),
             });

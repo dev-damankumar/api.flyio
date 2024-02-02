@@ -31,7 +31,7 @@ export async function addFlyIOMeeting(
     const meet = await Meeting.create(event);
     await send({
       to: user.email,
-      subject: 'Forgot Password',
+      subject: 'Fly io Meeting Invite',
       html: joinMeetingTemplete(
         'User',
         details.description || '',

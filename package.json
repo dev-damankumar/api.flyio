@@ -32,7 +32,9 @@
   },
   "dependencies": {
     "@apollo/server": "^4.9.5",
+    "@microsoft/microsoft-graph-client": "^3.0.7",
     "@sendgrid/mail": "^8.1.0",
+    "axios": "^1.6.7",
     "bcrypt": "^5.1.1",
     "connect-redis": "^7.1.0",
     "cors": "^2.8.5",

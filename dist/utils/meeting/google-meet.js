@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addGoogleMeeting = exports.getGoogleMeetings = void 0;
+exports.addGoogleMeeting = void 0;
 const user_1 = __importDefault(require("../../models/user"));
 const googleapis_1 = require("googleapis");
 const uuid_1 = require("uuid");
@@ -24,20 +24,17 @@ const calendar = googleapis_1.google.calendar({
     version: 'v3',
     auth: oAuth2Client,
 });
-function getGoogleMeetings() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const result = yield calendar.events.list({
-            calendarId: constants_1.googleMeetCalenderId,
-            timeMin: new Date().toISOString(),
-            maxResults: 10,
-            singleEvents: true,
-            orderBy: 'startTime',
-        });
-        const meetings = result.data.items;
-        return meetings;
-    });
-}
-exports.getGoogleMeetings = getGoogleMeetings;
+// export async function getGoogleMeetings() {
+//   const result = await calendar.events.list({
+//     calendarId: googleMeetCalenderId,
+//     timeMin: new Date().toISOString(),
+//     maxResults: 10,
+//     singleEvents: true,
+//     orderBy: 'startTime',
+//   });
+//   const meetings = result.data.items;
+//   return meetings;
+// }
 function addGoogleMeeting(context, details) {
     var _a, _b, _c, _d;
     return __awaiter(this, void 0, void 0, function* () {

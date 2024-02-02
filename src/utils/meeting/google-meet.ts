@@ -20,17 +20,17 @@ const calendar = google.calendar({
   auth: oAuth2Client,
 });
 
-export async function getGoogleMeetings() {
-  const result = await calendar.events.list({
-    calendarId: googleMeetCalenderId,
-    timeMin: new Date().toISOString(),
-    maxResults: 10,
-    singleEvents: true,
-    orderBy: 'startTime',
-  });
-  const meetings = result.data.items;
-  return meetings;
-}
+// export async function getGoogleMeetings() {
+//   const result = await calendar.events.list({
+//     calendarId: googleMeetCalenderId,
+//     timeMin: new Date().toISOString(),
+//     maxResults: 10,
+//     singleEvents: true,
+//     orderBy: 'startTime',
+//   });
+//   const meetings = result.data.items;
+//   return meetings;
+// }
 
 export async function addGoogleMeeting(
   context: GraphqlContextFunctionArgument,

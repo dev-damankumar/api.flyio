@@ -21,6 +21,10 @@ export const googleMeetCalenderId = process.env.GOOGLE_CALENDER_ID!;
 
 export const googleClientId = process.env.GOOGLE_CLIENT_ID!;
 export const googleSecretId = process.env.GOOGLE_SECRET_ID!;
+
+export const zoomClientId = process.env.ZOOM_CLIENT_ID!;
+export const zoomSecretId = process.env.ZOOM_SECRET_ID!;
+
 export const SCOPES = ['https://www.googleapis.com/auth/calendar'];
 export const impersonatedUser = process.env.IMPERSONATED_USER;
 export const email = {
