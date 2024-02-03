@@ -19,5 +19,10 @@ const meetingMutations = {
             return yield meeting_controller_1.default.addMeetingHandler(context, args.meeting);
         });
     },
+    cancelMeeting(_, args, context) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield meeting_controller_1.default.cancelMeetingHandler(context, args);
+        });
+    },
 };
 exports.default = meetingMutations;

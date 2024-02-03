@@ -869,6 +869,7 @@ function default_1(username, description, link) {
                               <tr>
                                 <td class="pad">
                                   <div class="alignment" align="center">
+                                  <p>${link}</p>
                                     <!--[if mso]>
 <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${link}" style="height:47px;width:162px;v-text-anchor:middle;" arcsize="10%" strokeweight="0.75pt" strokecolor="#101" fillcolor="#101">
 <w:anchorlock/>

@@ -14,7 +14,7 @@ export const send = async ({ to, subject, html, cc = '' }: EmailType) => {
     cc,
   };
 
-  if (_prod_ && !mockSMTP) {
+  if (_prod_ || !mockSMTP) {
     sgMail.setApiKey(sendGridApiKey);
     const info = await sgMail.send(mailOptions);
     console.log('Email Sent!!:', info);

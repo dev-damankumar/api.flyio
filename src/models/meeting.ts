@@ -1,4 +1,4 @@
-import mongoose, { Schema, model } from "mongoose";
+import mongoose, { Schema, model } from 'mongoose';
 
 const meetingSchema = new Schema(
   {
@@ -11,7 +11,10 @@ const meetingSchema = new Schema(
       required: true,
     },
     url: String,
-    meetingId: String,
+    meetingId: {
+      type: String,
+      required: true,
+    },
     description: {
       type: String,
     },
@@ -31,19 +34,19 @@ const meetingSchema = new Schema(
         email: {
           type: mongoose.Schema.Types.String,
           required: true,
-          ref: "User",
+          ref: 'User',
         },
       },
     ],
     host: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: "User",
+      ref: 'User',
     },
   },
   { timestamps: true }
 );
 
-const Meeting = model("meeting", meetingSchema);
+const Meeting = model('meeting', meetingSchema);
 
 export default Meeting;

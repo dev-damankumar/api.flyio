@@ -20,4 +20,5 @@ type Mutation {
   ): Response!
   setStats: Stats!
   addMeeting(meeting: AddMeetingInput!): Meeting!
+  cancelMeeting(type: String!, meetingId: String!): Response!
 }

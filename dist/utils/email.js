@@ -25,7 +25,7 @@ const send = ({ to, subject, html, cc = '' }) => __awaiter(void 0, void 0, void 
         html,
         cc,
     };
-    if (constants_1._prod_ && !constants_1.mockSMTP) {
+    if (constants_1._prod_ || !constants_1.mockSMTP) {
         mail_1.default.setApiKey(constants_1.sendGridApiKey);
         const info = yield mail_1.default.send(mailOptions);
         console.log('Email Sent!!:', info);

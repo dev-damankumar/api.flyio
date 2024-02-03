@@ -34,7 +34,10 @@ const meetingSchema = new mongoose_1.Schema({
         required: true,
     },
     url: String,
-    meetingId: String,
+    meetingId: {
+        type: String,
+        required: true,
+    },
     description: {
         type: String,
     },
@@ -54,15 +57,15 @@ const meetingSchema = new mongoose_1.Schema({
             email: {
                 type: mongoose_1.default.Schema.Types.String,
                 required: true,
-                ref: "User",
+                ref: 'User',
             },
         },
     ],
     host: {
         type: mongoose_1.default.Schema.Types.ObjectId,
         required: true,
-        ref: "User",
+        ref: 'User',
     },
 }, { timestamps: true });
-const Meeting = (0, mongoose_1.model)("meeting", meetingSchema);
+const Meeting = (0, mongoose_1.model)('meeting', meetingSchema);
 exports.default = Meeting;

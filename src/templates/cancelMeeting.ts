@@ -1,4 +1,9 @@
-<!DOCTYPE html>
+export default function cancelMeetingTemplate(
+  username: string,
+  link: string,
+  meetingName: string
+) {
+  const html = `<!DOCTYPE html>
 <html
   xmlns:v="urn:schemas-microsoft-com:vml"
   xmlns:o="urn:schemas-microsoft-com:office:office"
@@ -874,7 +879,7 @@
                                             word-break: break-word;
                                             line-height: 32px;
                                           "
-                                          >Join Now</span
+                                          >Go to dashboard</span
                                         >
                                       </span></a
                                     >
@@ -1222,3 +1227,7 @@
     <!-- End -->
   </body>
 </html>
+`;
+
+  return html;
+}

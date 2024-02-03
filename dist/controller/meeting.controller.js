@@ -36,6 +36,12 @@ const addMeetingHandler = (context, data) => __awaiter(void 0, void 0, void 0, f
     const host = context.auth._id;
     return yield (0, index_1.addMeeting)(context, data.type, Object.assign(Object.assign({}, data), { host }));
 });
+const cancelMeetingHandler = (context, data) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!context.auth)
+        throw new Error('Unauthorized access');
+    const host = context.auth._id;
+    return yield (0, index_1.cancelMeeting)(context, data.type, data.meetingId);
+});
 const checkIfUserisInvited = (context, data) => __awaiter(void 0, void 0, void 0, function* () {
     if (!context.auth)
         throw new Error('Unauthorized access');
@@ -51,4 +57,5 @@ exports.default = {
     getMeetingsHandler,
     addMeetingHandler,
     checkIfUserisInvited,
+    cancelMeetingHandler,
 };

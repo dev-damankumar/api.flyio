@@ -2,7 +2,7 @@ import { AddMeetingInput, IMeetingFilter } from '../generated/graphql';
 import Meeting from '../models/meeting';
 import { GraphqlContextFunctionArgument, MeetingType } from '../types';
 import { getTodayDateRange, getTommorrowDateRange } from '../utils/date';
-import { addMeeting } from '../utils/meeting/index';
+import { addMeeting, cancelMeeting } from '../utils/meeting/index';
 
 const getMeetingsHandler = async (
   context: GraphqlContextFunctionArgument,
@@ -31,6 +31,15 @@ const addMeetingHandler = async (
   return await addMeeting(context, data.type, { ...data, host });
 };
 
+const cancelMeetingHandler = async (
+  context: GraphqlContextFunctionArgument,
+  data: { type: MeetingType; meetingId: string }
+) => {
+  if (!context.auth) throw new Error('Unauthorized access');
+  const host = context.auth._id;
+  return await cancelMeeting(context, data.type, data.meetingId);
+};
+
 const checkIfUserisInvited = async (
   context: GraphqlContextFunctionArgument,
   data: { meetingId: string }
@@ -49,4 +58,5 @@ export default {
   getMeetingsHandler,
   addMeetingHandler,
   checkIfUserisInvited,
+  cancelMeetingHandler,
 };

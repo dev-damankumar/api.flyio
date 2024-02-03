@@ -1,36 +1,26 @@
 import User from '../../models/user';
 import { google } from 'googleapis';
+
 import { v4 as uuidv4 } from 'uuid';
 import {
   GQLErrorCodes,
   googleClientId,
-  googleMeetCalenderId,
   googleSecretId,
+  siteurl,
 } from '../../constants';
 import { AddMeetingInput } from '../../generated/graphql';
 import Meeting from '../../models/meeting';
 import { GraphqlContextFunctionArgument, MeetingType } from '../../types';
 import { ObjectId } from 'mongoose';
 import { GQLError } from '../index';
-
+import { send } from '../email';
+import cancelMeetingTemplete from '../../templates/cancelMeeting';
 const oAuth2Client = new google.auth.OAuth2(googleClientId, googleSecretId);
 
 const calendar = google.calendar({
   version: 'v3',
   auth: oAuth2Client,
 });
-
-// export async function getGoogleMeetings() {
-//   const result = await calendar.events.list({
-//     calendarId: googleMeetCalenderId,
-//     timeMin: new Date().toISOString(),
-//     maxResults: 10,
-//     singleEvents: true,
-//     orderBy: 'startTime',
-//   });
-//   const meetings = result.data.items;
-//   return meetings;
-// }
 
 export async function addGoogleMeeting(
   context: GraphqlContextFunctionArgument,
@@ -85,15 +75,83 @@ export async function addGoogleMeeting(
     },
   };
   try {
-    await calendar.events.insert({
+    const res = await calendar.events.insert({
       calendarId: 'primary',
       requestBody: event,
       conferenceDataVersion: 1,
     });
-    const meeting = await Meeting.create({ ...details });
+    const meeting = await Meeting.create({
+      ...details,
+      meetingId: res.data.id,
+    });
     return meeting;
   } catch (error) {
     console.log('There was an error contacting the Calendar service: ' + error);
     throw new Error('There was an error while creating event');
+  }
+}
+
+export async function cancelGoogleMeeting(
+  context: GraphqlContextFunctionArgument,
+  meetingId: string
+) {
+  if (!context.auth) throw new Error('Unauthorized access');
+  const userId = context.auth._id;
+  const user = await User.findOne({
+    _id: userId,
+  });
+  if (!user) throw new Error('Unauthorized access');
+  const accessToken = user.integration?.google?.accessToken;
+  const refreshToken = user.integration?.google?.refreshToken;
+  if (!accessToken)
+    throw new GQLError('Missing access token', GQLErrorCodes.NO_ACCESS_TOKEN);
+  if (refreshToken) {
+    oAuth2Client.setCredentials({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    });
+  } else {
+    oAuth2Client.setCredentials({
+      access_token: accessToken,
+    });
+  }
+  try {
+    await calendar.events.delete({
+      calendarId: 'primary',
+      eventId: meetingId,
+    });
+
+    const meeting = await Meeting.findOneAndDelete({
+      host: user._id,
+      meetingId,
+    });
+    if (!meeting)
+      throw new GQLError(
+        'Meeing does not exists.',
+        GQLErrorCodes.MEETING_DOES_NOT_EXIST
+      );
+    const attendees: string[] = meeting.users.map((user) => user?.email || '');
+    await send({
+      to: user.email,
+      subject: 'Fly io Meeting Cancelled',
+      html: cancelMeetingTemplete(
+        'Flyio User',
+        `${siteurl}/dashboard`,
+        meeting?.name
+      ),
+      cc: attendees.join(),
+    });
+    return {
+      message: 'We have cancel your meeting',
+      status: 200,
+      type: 'success',
+    };
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('Not Found'))
+      throw new GQLError(
+        'Meeing does not exists.',
+        GQLErrorCodes.MEETING_DOES_NOT_EXIST
+      );
+    throw error;
   }
 }

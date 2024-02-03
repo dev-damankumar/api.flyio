@@ -6,8 +6,11 @@ import { ObjectId } from 'mongoose';
 import path from 'path';
 import { send } from '../email';
 import joinMeetingTemplete from '../../templates/join-meeting';
-import { siteurl } from '../../constants';
+import cancelMeetingTemplete from '../../templates/cancelMeeting';
+import { GQLErrorCodes, siteurl } from '../../constants';
 import User from '../../models/user';
+import { AxiosError } from 'axios';
+import { GQLError } from '..';
 
 type TFLyIoMeeting = AddMeetingInput & {
   host: string | ObjectId;
@@ -43,5 +46,55 @@ export async function addFlyIOMeeting(
   } catch (error) {
     console.log('There was an error contacting the Calendar service: ' + error);
     throw new Error('There was an error while creating event');
+  }
+}
+
+export async function cancelFlyIOMeeting(
+  context: GraphqlContextFunctionArgument,
+  meetingId: string
+) {
+  if (!context.auth) throw new Error('Unauthorized access');
+  const userId = context.auth._id;
+  const user = await User.findOne({
+    _id: userId,
+  });
+  if (!user) throw new Error('Unauthorized access');
+  try {
+    const meeting = await Meeting.findOneAndDelete({
+      host: user._id,
+      meetingId,
+    });
+    if (!meeting)
+      throw new GQLError(
+        'Meeing does not exists.',
+        GQLErrorCodes.MEETING_DOES_NOT_EXIST
+      );
+    const attendees: string[] = meeting.users.map((user) => user?.email || '');
+    await send({
+      to: user.email,
+      subject: 'Fly io Meeting Cancelled',
+      html: cancelMeetingTemplete(
+        'Flyio User',
+        `${siteurl}/dashboard`,
+        meeting?.name
+      ),
+      cc: attendees.join(),
+    });
+    return {
+      message: 'We have cancel your meeting',
+      status: 200,
+      type: 'success',
+    };
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      if (error.response?.data.code === 3001) {
+        throw new GQLError(
+          'Meeing does not exists.',
+          GQLErrorCodes.MEETING_DOES_NOT_EXIST
+        );
+      }
+      throw error;
+    }
+    throw error;
   }
 }
