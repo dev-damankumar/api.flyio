@@ -19,13 +19,21 @@ const getMeetingsHandler = (context, data) => __awaiter(void 0, void 0, void 0, 
     if (!context.auth)
         throw new Error('Unauthorized access');
     const match = { host: context.auth._id };
+    console.log('data', data);
+    const { todayEndDate, todayNowDate, todayStartDate } = (0, date_1.getTodayDateRange)();
+    const { tomorrowEndDate, tomorrowStartDate } = (0, date_1.gettomorrowDateRange)();
     if (data === null || data === void 0 ? void 0 : data.today) {
-        const { todayEndDate, todayStartDate } = (0, date_1.getTodayDateRange)();
-        match.startDate = { $gte: todayStartDate, $lt: todayEndDate };
+        match.startDate = { $gte: todayNowDate, $lt: todayEndDate };
     }
-    if (data === null || data === void 0 ? void 0 : data.tommorrow) {
-        const { tommorrowEndDate, tommorrowStartDate } = (0, date_1.getTommorrowDateRange)();
-        match.startDate = { $gte: tommorrowStartDate, $lt: tommorrowEndDate };
+    else if (data === null || data === void 0 ? void 0 : data.tomorrow) {
+        match.startDate = { $gte: tomorrowStartDate, $lt: tomorrowEndDate };
+    }
+    else if (data === null || data === void 0 ? void 0 : data.someday) {
+        match.startDate = { $gt: tomorrowEndDate };
+    }
+    else {
+        match.startDate = { $lt: todayNowDate };
+        console.log('here', data);
     }
     const meetings = yield meeting_1.default.find(match).sort('startDate').exec();
     return meetings;

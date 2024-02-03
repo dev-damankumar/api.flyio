@@ -1,7 +1,7 @@
 import { AddMeetingInput, IMeetingFilter } from '../generated/graphql';
 import Meeting from '../models/meeting';
 import { GraphqlContextFunctionArgument, MeetingType } from '../types';
-import { getTodayDateRange, getTommorrowDateRange } from '../utils/date';
+import { getTodayDateRange, gettomorrowDateRange } from '../utils/date';
 import { addMeeting, cancelMeeting } from '../utils/meeting/index';
 
 const getMeetingsHandler = async (
@@ -10,13 +10,18 @@ const getMeetingsHandler = async (
 ) => {
   if (!context.auth) throw new Error('Unauthorized access');
   const match: { [any: string]: any } = { host: context.auth._id };
+  console.log('data', data);
+  const { todayEndDate, todayNowDate, todayStartDate } = getTodayDateRange();
+  const { tomorrowEndDate, tomorrowStartDate } = gettomorrowDateRange();
   if (data?.today) {
-    const { todayEndDate, todayStartDate } = getTodayDateRange();
-    match.startDate = { $gte: todayStartDate, $lt: todayEndDate };
-  }
-  if (data?.tommorrow) {
-    const { tommorrowEndDate, tommorrowStartDate } = getTommorrowDateRange();
-    match.startDate = { $gte: tommorrowStartDate, $lt: tommorrowEndDate };
+    match.startDate = { $gte: todayNowDate, $lt: todayEndDate };
+  } else if (data?.tomorrow) {
+    match.startDate = { $gte: tomorrowStartDate, $lt: tomorrowEndDate };
+  } else if (data?.someday) {
+    match.startDate = { $gt: tomorrowEndDate };
+  } else {
+    match.startDate = { $lt: todayNowDate };
+    console.log('here', data);
   }
   const meetings = await Meeting.find(match).sort('startDate').exec();
   return meetings;

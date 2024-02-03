@@ -24,7 +24,8 @@ type UserInvite {
 
 input IMeetingFilter {
   today: Boolean
-  tommorrow: Boolean
+  tomorrow: Boolean
+  someday: Boolean
 }
 
 input InputAddUser {
